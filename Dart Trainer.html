@@ -1,0 +1,781 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Darts Trainer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; background: #0d0d16; color: #e2e2f0; font-family: 'Rajdhani', sans-serif; }
+  body { overscroll-behavior: none; }
+  button { cursor: pointer; font-family: 'Rajdhani', sans-serif; border: none; outline: none; -webkit-tap-highlight-color: transparent; }
+  button:active { opacity: 0.75; transform: scale(0.97); }
+  input { outline: none; font-family: 'Rajdhani', sans-serif; }
+  ::-webkit-scrollbar { width: 4px; } ::-webkit-scrollbar-track { background: #1a1a2e; } ::-webkit-scrollbar-thumb { background: #e94560; border-radius: 2px; }
+  .screen { display: none; } .screen.active { display: block; }
+  .badge { display: inline-block; border-radius: 5px; padding: 2px 8px; font-size: 13px; font-weight: 700; font-family: monospace; letter-spacing: 0.5px; }
+  .badge-lg { padding: 5px 12px; font-size: 18px; }
+  .badge-t { background: #1a0810; color: #e94560; border: 1px solid #5a1020; }
+  .badge-d { background: #0a1530; color: #60a5fa; border: 1px solid #1a3a6a; }
+  .badge-s { background: #1a1a2e; color: #8080a0; border: 1px solid #2a2a45; }
+  .slot { width: 44px; height: 32px; border: 1px dashed #2a2a45; border-radius: 5px; display: inline-block; }
+  .arrow { color: #404060; font-size: 11px; }
+  .progress-bar { background: #1a1a2e; border-radius: 3px; height: 5px; overflow: hidden; }
+  .progress-fill { background: #e94560; height: 100%; border-radius: 3px; transition: width 0.3s; }
+  .wrap { padding: 20px; max-width: 480px; margin: 0 auto; }
+  .btn { border-radius: 8px; transition: opacity 0.1s, transform 0.1s; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .flex-row { display: flex; align-items: center; }
+  .footer { text-align: center; padding: 16px 0 24px; font-size: 13px; color: #555; letter-spacing: 0.05em; }
+</style>
+</head>
+<body>
+
+<!-- HOME -->
+<div id="screen-home" class="screen active">
+  <div style="padding:24px;max-width:480px;margin:0 auto">
+    <div style="text-align:center;padding:20px 0 30px">
+      <div style="font-size:56px">🎯</div>
+      <h1 style="color:#e94560;font-size:30px;margin:8px 0 4px;font-weight:700;letter-spacing:3px">DARTS TRAINER</h1>
+      <p style="color:#8080a0;font-size:13px">Perfektioniere dein Spiel</p>
+    </div>
+    <div class="grid-2">
+      <button class="btn" onclick="showScreen('trainer-menu')" style="background:#1a1a2e;border:1px solid #252540;padding:18px 14px;text-align:left;color:#e2e2f0;display:flex;flex-direction:column;gap:8px;width:100%">
+        <span style="font-size:28px">🎯</span>
+        <span style="color:#e94560;font-size:15px;font-weight:700">Checkout Trainer</span>
+        <span style="color:#8080a0;font-size:11px;line-height:1.4">Übe Finish-Wege & Rechenwege für alle Scores</span>
+      </button>
+      <button class="btn" onclick="showScreen('x01-setup')" style="background:#1a1a2e;border:1px solid #252540;padding:18px 14px;text-align:left;color:#e2e2f0;display:flex;flex-direction:column;gap:8px;width:100%">
+        <span style="font-size:28px">🏆</span>
+        <span style="color:#e94560;font-size:15px;font-weight:700">X01 Spiel</span>
+        <span style="color:#8080a0;font-size:11px;line-height:1.4">301 / 501 Training mit Dart-Eingabe</span>
+      </button>
+      <button class="btn" onclick="startClock()" style="background:#1a1a2e;border:1px solid #252540;padding:18px 14px;text-align:left;color:#e2e2f0;display:flex;flex-direction:column;gap:8px;width:100%">
+        <span style="font-size:28px">⏱️</span>
+        <span style="color:#e94560;font-size:15px;font-weight:700">Around the Clock</span>
+        <span style="color:#8080a0;font-size:11px;line-height:1.4">Alle Zahlen 1–20 + Bull der Reihe nach treffen</span>
+      </button>
+      <button class="btn" onclick="showScreen('table')" style="background:#1a1a2e;border:1px solid #252540;padding:18px 14px;text-align:left;color:#e2e2f0;display:flex;flex-direction:column;gap:8px;width:100%">
+        <span style="font-size:28px">📋</span>
+        <span style="color:#e94560;font-size:15px;font-weight:700">Checkout Tabelle</span>
+        <span style="color:#8080a0;font-size:11px;line-height:1.4">Alle Finish-Kombinationen auf einen Blick</span>
+      </button>
+    </div>
+  </div>
+  <div class="footer">made by <span style="color:#e94560;font-weight:600">Joey Richter</span></div>
+</div>
+
+<!-- CHECKOUT TRAINER MENU -->
+<div id="screen-trainer-menu" class="screen">
+  <div class="wrap">
+    <div style="margin-bottom:20px"><button class="btn" onclick="showScreen('home')" style="background:transparent;color:#8080a0;border:1px solid #252540;padding:7px 14px;font-size:13px">← Zurück</button></div>
+    <h2 style="color:#e94560;font-size:22px;margin:0 0 6px">CHECKOUT TRAINER</h2>
+    <p style="color:#8080a0;font-size:13px;margin:0 0 20px;line-height:1.5">Gib die richtige Dart-Kombination für den angezeigten Score ein. Der letzte Dart muss immer ein <span style="color:#60a5fa">Doppelfeld</span> treffen.</p>
+    <div style="display:flex;flex-direction:column;gap:8px" id="trainer-modes"></div>
+  </div>
+</div>
+
+<!-- CHECKOUT TRAINER GAME -->
+<div id="screen-trainer" class="screen">
+  <div class="wrap">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+      <button class="btn" id="trainer-back-btn" style="background:transparent;color:#8080a0;border:1px solid #252540;padding:7px 14px;font-size:13px">← Zurück</button>
+      <div style="font-size:14px;display:flex;gap:14px">
+        <span style="color:#4ade80">✓ <span id="t-ok">0</span></span>
+        <span style="color:#f87171">✗ <span id="t-fail">0</span></span>
+      </div>
+    </div>
+    <div id="trainer-score-box" style="background:#1a1a2e;border:2px solid #e94560;border-radius:12px;padding:20px;text-align:center;margin-bottom:12px;transition:border-color 0.2s">
+      <div style="color:#8080a0;font-size:11px;letter-spacing:2px;margin-bottom:4px">CHECKOUT SCORE</div>
+      <div id="trainer-score" style="color:#e94560;font-size:64px;font-weight:700;line-height:1">-</div>
+      <div id="trainer-darts-display" style="display:flex;justify-content:center;gap:8px;margin-top:14px"></div>
+      <div id="trainer-sum" style="margin-top:8px;font-size:13px;color:#8080a0"></div>
+    </div>
+    <div id="trainer-result" style="display:none;border-radius:10px;padding:14px;margin-bottom:12px;text-align:center"></div>
+    <div id="trainer-controls">
+      <div style="text-align:right;margin-bottom:8px">
+        <button class="btn" onclick="toggleHint()" style="background:transparent;color:#8080a0;border:1px solid #252540;padding:5px 10px;font-size:12px" id="hint-btn">💡 Tipp anzeigen</button>
+      </div>
+      <div id="trainer-hint" style="display:none;background:#18180e;border:1px solid #3a3a18;border-radius:8px;padding:10px 14px;margin-bottom:10px">
+        <span style="color:#a0a040;font-size:12px;display:block;margin-bottom:6px">💡 Mögliche Wege:</span>
+        <div id="trainer-hint-content"></div>
+      </div>
+      <div style="display:flex;gap:8px;margin-bottom:10px">
+        <button class="btn" id="trainer-confirm" onclick="trainerConfirm()" style="flex:2;background:#e94560;color:#fff;padding:12px;font-size:15px;font-weight:700">✓ Bestätigen</button>
+        <button class="btn" onclick="trainerUndo()" style="flex:1;background:#1a1a2e;color:#8080a0;border:1px solid #252540;padding:12px;font-size:14px">← Undo</button>
+      </div>
+      <div id="dart-pad"></div>
+    </div>
+  </div>
+</div>
+
+<!-- X01 SETUP -->
+<div id="screen-x01-setup" class="screen">
+  <div class="wrap">
+    <div style="margin-bottom:20px"><button class="btn" onclick="showScreen('home')" style="background:transparent;color:#8080a0;border:1px solid #252540;padding:7px 14px;font-size:13px">← Zurück</button></div>
+    <h2 style="color:#e94560;font-size:22px;margin:0 0 6px">X01 TRAINING</h2>
+    <p style="color:#8080a0;font-size:13px;margin:0 0 24px">Gib jeden Dart einzeln ein. Runden bestehend aus bis zu 3 Darts. Finish nur auf Doppelfeld möglich.</p>
+    <div style="display:flex;gap:12px">
+      <button class="btn" onclick="startX01(301)" style="flex:1;background:#1a1a2e;border:1px solid #252540;color:#e2e2f0;padding:24px 0;font-size:26px;font-weight:700">301</button>
+      <button class="btn" onclick="startX01(501)" style="flex:1;background:#1a1a2e;border:2px solid #e94560;color:#e94560;padding:24px 0;font-size:26px;font-weight:700">501</button>
+      <button class="btn" onclick="startX01(701)" style="flex:1;background:#1a1a2e;border:1px solid #252540;color:#e2e2f0;padding:24px 0;font-size:26px;font-weight:700">701</button>
+    </div>
+  </div>
+</div>
+
+<!-- X01 GAME -->
+<div id="screen-x01" class="screen">
+  <div class="wrap">
+    <div style="display:flex;justify-content:space-between;margin-bottom:14px">
+      <button class="btn" onclick="showScreen('x01-setup')" style="background:transparent;color:#8080a0;border:1px solid #252540;padding:7px 14px;font-size:13px">← Zurück</button>
+      <button class="btn" onclick="resetX01()" style="background:#1a1a2e;color:#8080a0;border:1px solid #252540;padding:7px 14px;font-size:13px">↺ Neu starten</button>
+    </div>
+    <div id="x01-score-panel" style="background:#1a1a2e;border:2px solid #2a2a40;border-radius:12px;padding:16px 18px;margin-bottom:10px;transition:all 0.2s">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start">
+        <div>
+          <div style="color:#8080a0;font-size:11px;letter-spacing:1px">VERBLEIBEND</div>
+          <div id="x01-rem" style="color:#e94560;font-size:56px;font-weight:700;line-height:1">501</div>
+        </div>
+        <div style="text-align:right">
+          <div id="x01-avg" style="color:#fbbf24;font-size:24px;font-weight:700">Ø 0.0</div>
+          <div style="color:#8080a0;font-size:11px">pro 3 Darts</div>
+          <div id="x01-stats" style="color:#8080a0;font-size:11px;margin-top:6px">0 Rd. · 0 Darts</div>
+        </div>
+      </div>
+      <div id="x01-hint" style="display:none;border-top:1px solid #252540;margin-top:12px;padding-top:10px">
+        <div style="color:#8080a0;font-size:11px;margin-bottom:6px">💡 CHECKOUT TIPP:</div>
+        <div id="x01-hint-content" style="display:flex;gap:5px;flex-wrap:wrap;align-items:center"></div>
+      </div>
+    </div>
+    <div id="x01-round-box" style="background:#141420;border:1px solid #252540;border-radius:10px;padding:12px;margin-bottom:10px">
+      <div style="color:#8080a0;font-size:11px;margin-bottom:8px">AKTUELLE RUNDE</div>
+      <div id="x01-current" style="display:flex;gap:6px;min-height:34px;align-items:center;flex-wrap:wrap"><span style="color:#303050;font-size:13px">Dart eingeben...</span></div>
+      <div id="x01-round-sum" style="margin-top:8px;font-size:13px"></div>
+    </div>
+    <div id="x01-done-box" style="display:none;background:#0a1e10;border:1px solid #4ade80;border-radius:10px;padding:20px;text-align:center;margin-bottom:10px">
+      <div style="font-size:40px">🏆</div>
+      <div style="color:#4ade80;font-size:22px;font-weight:700;margin-top:6px">CHECKOUT!</div>
+      <div id="x01-done-stats" style="color:#8080a0;margin-top:6px;font-size:13px"></div>
+      <button class="btn" onclick="resetX01()" style="background:#e94560;color:#fff;padding:11px 24px;font-size:15px;font-weight:700;margin-top:14px;border-radius:8px">Neues Spiel</button>
+    </div>
+    <div id="x01-action-btns" style="display:flex;gap:8px;margin-bottom:10px">
+      <button class="btn" id="x01-confirm" onclick="x01Confirm()" style="flex:2;background:#e94560;color:#fff;padding:12px;font-size:15px;font-weight:700">✓ Runde bestätigen</button>
+      <button class="btn" onclick="x01Undo()" style="flex:1;background:#1a1a2e;color:#8080a0;border:1px solid #252540;padding:12px;font-size:14px">← Undo</button>
+    </div>
+    <div id="x01-pad"></div>
+    <div id="x01-history" style="margin-top:14px;display:none">
+      <div style="color:#8080a0;font-size:11px;margin-bottom:6px">VERLAUF</div>
+      <div id="x01-history-list" style="max-height:120px;overflow-y:auto;display:flex;flex-direction:column;gap:4px"></div>
+    </div>
+  </div>
+</div>
+
+<!-- AROUND THE CLOCK -->
+<div id="screen-clock" class="screen">
+  <div class="wrap">
+    <div style="display:flex;justify-content:space-between;margin-bottom:16px">
+      <button class="btn" onclick="showScreen('home')" style="background:transparent;color:#8080a0;border:1px solid #252540;padding:7px 14px;font-size:13px">← Zurück</button>
+      <button class="btn" onclick="resetClock()" style="background:#1a1a2e;color:#8080a0;border:1px solid #252540;padding:7px 14px;font-size:13px">↺ Neu</button>
+    </div>
+    <h2 style="color:#e94560;font-size:22px;margin:0 0 14px">AROUND THE CLOCK</h2>
+    <div class="progress-bar" style="margin-bottom:8px"><div id="clock-progress" class="progress-fill" style="width:0%"></div></div>
+    <div id="clock-stats" style="color:#8080a0;font-size:12px;margin-bottom:14px">0 / 21 · 0 Darts gesamt · Ø - Darts/Zahl</div>
+    <div id="clock-grid" style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:16px"></div>
+    <div id="clock-game">
+      <div style="background:#1a1a2e;border:2px solid #e94560;border-radius:12px;padding:24px;text-align:center;margin-bottom:16px">
+        <div style="color:#8080a0;font-size:11px;letter-spacing:2px;margin-bottom:4px">AKTUELLES ZIEL</div>
+        <div id="clock-target" style="color:#e94560;font-size:64px;font-weight:700;line-height:1">1</div>
+        <div id="clock-misses" style="color:#f87171;font-size:14px;margin-top:10px;font-weight:700"></div>
+      </div>
+      <div style="display:flex;gap:10px">
+        <button class="btn" onclick="clockHit()" style="flex:2;background:#e94560;color:#fff;padding:16px;font-size:18px;font-weight:700;border-radius:8px">✓ Getroffen!</button>
+        <button class="btn" onclick="clockMiss()" style="flex:1;background:#1a1a2e;color:#f87171;border:1px solid #3a1515;padding:16px;font-size:16px;font-weight:700;border-radius:8px">✗ Vorbei</button>
+      </div>
+    </div>
+    <div id="clock-done" style="display:none;background:#0a1e10;border:1px solid #4ade80;border-radius:12px;padding:24px;text-align:center">
+      <div style="font-size:44px">🏆</div>
+      <div style="color:#4ade80;font-size:24px;font-weight:700;margin-top:8px">ABGESCHLOSSEN!</div>
+      <div id="clock-done-stats" style="color:#e2e2f0;font-size:16px;margin-top:10px"></div>
+      <button class="btn" onclick="resetClock()" style="background:#e94560;color:#fff;padding:12px 28px;font-size:16px;font-weight:700;margin-top:16px;border-radius:8px">Nochmal</button>
+    </div>
+  </div>
+</div>
+
+<!-- CHECKOUT TABELLE -->
+<div id="screen-table" class="screen">
+  <div class="wrap">
+    <div style="margin-bottom:16px"><button class="btn" onclick="showScreen('home')" style="background:transparent;color:#8080a0;border:1px solid #252540;padding:7px 14px;font-size:13px">← Zurück</button></div>
+    <h2 style="color:#e94560;font-size:22px;margin:0 0 14px">CHECKOUT TABELLE</h2>
+    <input id="table-search" type="text" placeholder="Score oder Dart suchen (z.B. 121, T20, Bull, D16)"
+      oninput="renderTable()" 
+      style="width:100%;background:#1a1a2e;color:#e2e2f0;border:1px solid #252540;border-radius:8px;padding:10px 14px;font-size:14px;margin-bottom:8px">
+    <div id="table-count" style="color:#8080a0;font-size:12px;margin-bottom:8px"></div>
+    <div id="table-list" style="max-height:65vh;overflow-y:auto"></div>
+  </div>
+</div>
+
+<script>
+// ==================== DART LOGIC ====================
+const IMPOSSIBLE = new Set([159,162,163,165,166,168,169]);
+
+const NON_DOUBLES = (() => {
+  const d = [];
+  for (let i = 20; i >= 1; i--) d.push({ name:`T${i}`, value:i*3, type:"triple" });
+  d.push({ name:"25", value:25, type:"single" });
+  for (let i = 20; i >= 1; i--) d.push({ name:`${i}`, value:i, type:"single" });
+  return d;
+})();
+
+const DOUBLES_LIST = (() => {
+  const d = [{ name:"Bull", value:50, type:"double" }];
+  for (let i = 20; i >= 1; i--) d.push({ name:`D${i}`, value:i*2, type:"double" });
+  return d;
+})();
+
+const ALL_DARTS = [...NON_DOUBLES, ...DOUBLES_LIST];
+const PREF_DOUBLES = new Set(["D20","D18","D16","D12","D10","D8","D4","Bull"]);
+
+const PREFERRED_CHECKOUTS = {
+  170:["T20","T20","Bull"], 167:["T20","T19","Bull"], 164:["T20","T18","Bull"], 161:["T20","T17","Bull"],
+  160:["T20","T20","D20"], 158:["T20","T20","D19"], 157:["T20","T19","D20"], 156:["T20","T20","D18"],
+  155:["T20","T19","D19"], 154:["T20","T18","D20"], 153:["T20","T19","D18"], 152:["T20","T20","D16"],
+  151:["T20","T17","D20"], 150:["T20","T18","D18"], 149:["T20","T19","D16"], 148:["T20","T16","D20"],
+  147:["T20","T17","D18"], 146:["T20","T18","D16"], 145:["T20","T15","D20"], 144:["T20","T20","D12"],
+  143:["T20","T17","D16"], 142:["T20","T14","D20"], 141:["T20","T19","D12"], 140:["T20","T20","D10"],
+  139:["T20","T13","D20"], 138:["T20","T18","D12"], 137:["T20","T19","D10"], 136:["T20","T20","D8"],
+  135:["T20","T17","D12"], 134:["T20","T14","D16"], 133:["T20","T19","D8"],  132:["T20","T16","D12"],
+  131:["T19","T14","D16"], 130:["T20","T18","D8"],  129:["T19","T16","D12"], 128:["T18","T14","D16"],
+  127:["T20","T17","D8"],  126:["T20","T14","D12"], 125:["T20","T15","D10"], 124:["T20","T16","D8"],
+  123:["T20","T13","D12"], 122:["T20","T14","D10"], 121:["T19","T16","D8"],
+  120:["T20","20","D20"],  119:["T20","19","D20"],  118:["T20","18","D20"],  117:["T20","17","D20"],
+  116:["T20","16","D20"],  115:["T20","15","D20"],  114:["T20","14","D20"],  113:["T20","13","D20"],
+  112:["T20","12","D20"],  111:["T20","11","D20"],  110:["T20","Bull"],
+  109:["T20","9","D20"],   108:["T20","16","D16"],  107:["T19","Bull"],
+  106:["T20","14","D16"],  105:["T20","13","D16"],  104:["T18","Bull"],
+  103:["T19","6","D20"],   102:["T20","10","D16"],  101:["T17","Bull"],
+  100:["T20","D20"],       99:["T19","10","D16"],   98:["T20","D18"],
+  97:["T19","D20"],        96:["T20","D18"],         95:["T19","D19"],
+  94:["T18","D20"],        93:["T19","D18"],         92:["T20","D16"],
+  91:["T17","D20"],        90:["T18","D18"],         89:["T19","D16"],
+  88:["T16","D20"],        87:["T17","D18"],         86:["T18","D16"],
+  85:["T15","D20"],        84:["T20","D12"],         83:["T17","D16"],
+  82:["T14","D20"],        81:["T19","D12"],         80:["T20","D10"],
+  79:["T13","D20"],        78:["T18","D12"],         77:["T19","D10"],
+  76:["T20","D8"],         75:["T17","D12"],         74:["T14","D16"],
+  73:["T19","D8"],         72:["T16","D12"],         71:["T13","D16"],
+  70:["T18","D8"],         69:["T11","D18"],         68:["T20","D4"],
+  67:["T17","D8"],         66:["T10","D18"],         65:["T19","D4"],
+  64:["T16","D8"],         63:["T13","D12"],         62:["T10","D16"],
+  61:["T15","D8"],         60:["20","D20"],          59:["19","D20"],
+  58:["18","D20"],         57:["17","D20"],          56:["16","D20"],
+  55:["15","D20"],         54:["14","D20"],          53:["13","D20"],
+  52:["12","D20"],         51:["11","D20"],          50:["Bull"],
+  49:["9","D20"],          48:["16","D16"],          47:["7","D20"],
+  46:["6","D20"],          45:["13","D16"],          44:["12","D16"],
+  43:["3","D20"],          42:["10","D16"],          41:["9","D16"],
+  40:["D20"],              38:["D19"],               36:["D18"],
+  34:["D17"],              32:["D16"],               30:["D15"],
+  28:["D14"],              26:["D13"],               24:["D12"],
+  22:["D11"],              20:["D10"],               18:["D9"],
+  16:["D8"],               14:["D7"],                12:["D6"],
+  10:["D5"],               8:["D4"],                 6:["D3"],
+  4:["D2"],                2:["D1"],
+  39:["7","D16"],  37:["5","D16"],  35:["3","D16"],  33:["1","D16"],
+  31:["7","D12"],  29:["5","D12"],  27:["3","D12"],  25:["9","D8"],
+  23:["7","D8"],   21:["5","D8"],   19:["3","D8"],   17:["1","D8"],
+  15:["7","D4"],   13:["5","D4"],   11:["3","D4"],   9:["1","D4"],
+  7:["3","D2"],    5:["1","D2"],    3:["1","D1"],
+};
+
+function findCheckout(score) {
+  if (score < 2 || score > 170 || IMPOSSIBLE.has(score)) return null;
+  if (PREFERRED_CHECKOUTS[score]) return PREFERRED_CHECKOUTS[score];
+  for (const d of DOUBLES_LIST) { if (d.value === score) return [d.name]; }
+  for (const a of ALL_DARTS) {
+    const r = score - a.value;
+    if (r >= 2 && r <= 50) for (const d of DOUBLES_LIST) { if (d.value === r) return [a.name, d.name]; }
+  }
+  for (const a of ALL_DARTS) {
+    const r1 = score - a.value;
+    if (r1 < 2 || r1 > 110) continue;
+    for (const b of ALL_DARTS) {
+      const r2 = r1 - b.value;
+      if (r2 >= 2 && r2 <= 50) for (const d of DOUBLES_LIST) { if (d.value === r2) return [a.name, b.name, d.name]; }
+    }
+  }
+  return null;
+}
+
+function findCheckouts(score, max = 3) {
+  if (score < 2 || score > 170 || IMPOSSIBLE.has(score)) return [];
+  const results = [], seen = new Set();
+  const add = (path) => {
+    const key = [...path].sort().join(",");
+    if (!seen.has(key) && results.length < max) { seen.add(key); results.push([...path]); return true; }
+    return false;
+  };
+  if (PREFERRED_CHECKOUTS[score]) add(PREFERRED_CHECKOUTS[score]);
+  const prefOnly = p => PREF_DOUBLES.has(p[p.length-1]);
+  for (const d of DOUBLES_LIST) { if (results.length >= max) break; if (d.value === score) { const p=[d.name]; if(prefOnly(p)) add(p); } }
+  for (const a of ALL_DARTS) {
+    if (results.length >= max) break;
+    const r = score - a.value;
+    if (r >= 2 && r <= 50) for (const d of DOUBLES_LIST) { if (d.value === r) { const p=[a.name,d.name]; if(prefOnly(p)) add(p); break; } }
+  }
+  for (const a of ALL_DARTS) {
+    if (results.length >= max) break;
+    const r1 = score - a.value;
+    if (r1 < 2 || r1 > 110) continue;
+    for (const b of ALL_DARTS) {
+      if (results.length >= max) break;
+      const r2 = r1 - b.value;
+      if (r2 >= 2 && r2 <= 50) for (const d of DOUBLES_LIST) { if (d.value === r2) { const p=[a.name,b.name,d.name]; if(prefOnly(p)) add(p); break; } }
+    }
+  }
+  // fallback
+  for (const a of ALL_DARTS) {
+    if (results.length >= max) break;
+    const r = score - a.value;
+    if (r >= 2 && r <= 50) for (const d of DOUBLES_LIST) { if (d.value === r) { add([a.name,d.name]); break; } }
+  }
+  for (const a of ALL_DARTS) {
+    if (results.length >= max) break;
+    const r1 = score - a.value;
+    if (r1 < 2 || r1 > 110) continue;
+    for (const b of ALL_DARTS) {
+      if (results.length >= max) break;
+      const r2 = r1 - b.value;
+      if (r2 >= 2 && r2 <= 50) for (const d of DOUBLES_LIST) { if (d.value === r2) { add([a.name,b.name,d.name]); break; } }
+    }
+  }
+  return results;
+}
+
+function isDouble(name) { return name === "Bull" || (typeof name === "string" && name.startsWith("D")); }
+const VALID_SCORES = Array.from({length:169},(_,i)=>i+2).filter(s=>!IMPOSSIBLE.has(s));
+
+// ==================== HELPERS ====================
+function badge(name, lg = false) {
+  if (!name) return '';
+  const isT = name.startsWith("T");
+  const isD = name.startsWith("D") || name === "Bull";
+  const cls = isT ? "badge-t" : isD ? "badge-d" : "badge-s";
+  return `<span class="badge ${cls}${lg?' badge-lg':''}">${name}</span>`;
+}
+
+function pathHtml(path, lg = false) {
+  return path.map((d,i) => `${badge(d,lg)}${i<path.length-1?'<span class="arrow" style="margin:0 2px">▸</span>':''}`).join('');
+}
+
+// ==================== NAVIGATION ====================
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-'+id).classList.add('active');
+  window.scrollTo(0,0);
+}
+
+// ==================== DART PAD ====================
+let padMult = 1;
+let padTarget = null; // callback
+
+function renderPad(containerId, callback) {
+  padTarget = callback;
+  padMult = 1;
+  const container = document.getElementById(containerId);
+  container.innerHTML = buildPadHtml();
+}
+
+function buildPadHtml() {
+  const nums = [20,19,18,17,16,15,14,13,12,11,10,9,8,7,6,5,4,3,2,1];
+  const multBtns = [
+    {m:1,label:'Einzel',activeBg:'#1a3060',activeColor:'#60a5fa'},
+    {m:2,label:'Doppel',activeBg:'#2a2880',activeColor:'#a0a0ff'},
+    {m:3,label:'Triple',activeBg:'#5a0f1e',activeColor:'#e94560'},
+  ];
+  let html = `<div style="display:flex;gap:6px;margin-bottom:6px">`;
+  for (const {m,label,activeBg,activeColor} of multBtns) {
+    const active = padMult === m;
+    html += `<button class="btn" onclick="setPadMult(${m})" style="flex:1;padding:9px 0;font-size:13px;font-weight:700;background:${active?activeBg:'#1a1a2e'};color:${active?activeColor:'#8080a0'};border:1px solid ${active?activeColor:'#252540'};border-radius:8px">${label}</button>`;
+  }
+  html += `</div><div style="display:grid;grid-template-columns:repeat(5,1fr);gap:4px">`;
+  for (const n of nums) {
+    html += `<button class="btn" onclick="padTap(${n})" style="background:#1a1a2e;color:#e2e2f0;border:1px solid #252540;padding:10px 0;font-size:15px;font-weight:700;border-radius:8px">${n}</button>`;
+  }
+  html += `</div>`;
+  const bullActive = padMult === 2;
+  const bullDisabled = padMult === 3;
+  html += `<button class="btn" onclick="padTapBull()" ${bullDisabled?'disabled':''} style="width:100%;margin-top:4px;background:#1a1a2e;color:${bullActive?'#60a5fa':'#8080a0'};border:1px solid ${bullActive?'#1a3a6a':'#252540'};padding:10px 0;font-size:14px;font-weight:700;border-radius:8px;opacity:${bullDisabled?0.3:1}">${padMult===2?'🎯 Bull (50)':'25 / Bull'}</button>`;
+  return html;
+}
+
+function setPadMult(m) {
+  padMult = m;
+  const c = document.getElementById(_currentPadId);
+  if (c) c.innerHTML = buildPadHtml();
+}
+
+let _currentPadId = '';
+function renderPadIn(containerId, callback) {
+  _currentPadId = containerId;
+  padTarget = callback;
+  padMult = 1;
+  document.getElementById(containerId).innerHTML = buildPadHtml();
+}
+
+function padTap(n) {
+  if (!padTarget) return;
+  const nm = padMult===1?`${n}`:padMult===2?`D${n}`:`T${n}`;
+  padTarget({ name:nm, value:n*padMult, type:padMult===1?'single':padMult===2?'double':'triple' });
+  padMult = 1;
+  document.getElementById(_currentPadId).innerHTML = buildPadHtml();
+}
+
+function padTapBull() {
+  if (!padTarget || padMult===3) return;
+  if (padMult===1) padTarget({ name:"25", value:25, type:"single" });
+  else padTarget({ name:"Bull", value:50, type:"double" });
+  padMult = 1;
+  document.getElementById(_currentPadId).innerHTML = buildPadHtml();
+}
+
+// ==================== CHECKOUT TRAINER ====================
+let trainerMode = null, trainerScore = null, trainerDarts = [], trainerResult = null;
+let trainerOk = 0, trainerFail = 0, trainerHintVisible = false;
+
+const trainerRanges = { "121":[121,121], easy:[2,100], mid:[61,140], hard:[101,170], all:[2,170] };
+const trainerLabels = [
+  {id:"121", label:"🎯 121 Challenge", desc:"Übe den klassischen 121-Finish"},
+  {id:"easy", label:"⭐ Leicht  (2 – 100)", desc:"Kleine Scores, einfache Checkouts"},
+  {id:"mid",  label:"⭐⭐ Mittel (61 – 140)", desc:"Mittlere Checkout-Scores"},
+  {id:"hard", label:"⭐⭐⭐ Schwer (101 – 170)", desc:"Hohe Scores bis Maxout 170"},
+  {id:"all",  label:"🎲 Zufällig (2 – 170)", desc:"Alle gültigen Checkout-Scores"},
+];
+
+document.getElementById('trainer-modes').innerHTML = trainerLabels.map(({id,label,desc}) =>
+  `<button class="btn" onclick="startTrainerMode('${id}')" style="background:#1a1a2e;border:1px solid #252540;padding:14px 16px;color:#e2e2f0;text-align:left;display:flex;justify-content:space-between;align-items:center;width:100%;border-radius:8px">
+    <div><div style="font-size:15px;font-weight:700">${label}</div><div style="font-size:11px;color:#8080a0;margin-top:2px">${desc}</div></div>
+    <span style="color:#e94560;font-size:18px">→</span>
+  </button>`
+).join('');
+
+document.getElementById('trainer-back-btn').onclick = () => { showScreen('trainer-menu'); };
+
+function genTrainerScore(m) {
+  const [lo,hi] = trainerRanges[m] || [2,170];
+  const pool = VALID_SCORES.filter(s => s>=lo && s<=hi);
+  return pool[Math.floor(Math.random()*pool.length)];
+}
+
+function startTrainerMode(m) {
+  trainerMode = m; trainerScore = genTrainerScore(m);
+  trainerDarts = []; trainerResult = null; trainerHintVisible = false;
+  trainerOk = 0; trainerFail = 0;
+  showScreen('trainer');
+  renderTrainer();
+  renderPadIn('dart-pad', (d) => {
+    if (trainerResult || trainerDarts.length >= 3) return;
+    const sum = trainerDarts.reduce((s,x)=>s+x.value,0) + d.value;
+    if (sum > trainerScore) { trainerDarts.push(d); renderTrainer(); return; }
+    trainerDarts.push(d);
+    renderTrainer();
+  });
+}
+
+function renderTrainer() {
+  const sum = trainerDarts.reduce((s,d)=>s+d.value,0);
+  const bust = sum > trainerScore;
+  const hints = trainerScore ? findCheckouts(trainerScore, 3) : [];
+
+  document.getElementById('t-ok').textContent = trainerOk;
+  document.getElementById('t-fail').textContent = trainerFail;
+  document.getElementById('trainer-score').textContent = trainerScore || '-';
+
+  const box = document.getElementById('trainer-score-box');
+  box.style.borderColor = trainerResult==='correct' ? '#4ade80' : trainerResult==='wrong' ? '#f87171' : '#e94560';
+
+  // darts display
+  let dartsHtml = trainerDarts.map(d => badge(d.name, true)).join('');
+  for (let i = trainerDarts.length; i < 3; i++) dartsHtml += '<span class="slot"></span>';
+  document.getElementById('trainer-darts-display').innerHTML = dartsHtml;
+
+  // sum
+  const sumEl = document.getElementById('trainer-sum');
+  if (trainerDarts.length > 0) {
+    const last = trainerDarts[trainerDarts.length-1];
+    let col = bust ? '#f87171' : sum===trainerScore ? '#4ade80' : '#fbbf24';
+    sumEl.innerHTML = `Summe: <b style="color:${col}">${sum}</b>${bust?' — ÜBERZOGEN!':''}${sum===trainerScore&&isDouble(last?.name)?' ✓':''}`;
+  } else { sumEl.innerHTML = ''; }
+
+  // hint
+  const hintEl = document.getElementById('trainer-hint');
+  hintEl.style.display = trainerHintVisible && !trainerResult ? 'block' : 'none';
+  document.getElementById('trainer-hint-content').innerHTML = hints.map((h,vi) =>
+    `<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:${vi<hints.length-1?'5px':'0'}">
+      <span style="color:#606030;font-size:11px;min-width:44px">Var. ${vi+1}:</span>
+      ${pathHtml(h)}
+    </div>`
+  ).join('');
+  document.getElementById('hint-btn').textContent = trainerHintVisible ? 'Tipp verbergen' : '💡 Tipp anzeigen';
+
+  // result
+  const resEl = document.getElementById('trainer-result');
+  if (trainerResult) {
+    resEl.style.display = 'block';
+    const ok = trainerResult === 'correct';
+    resEl.style.background = ok ? '#0a2014' : '#200a0a';
+    resEl.style.border = `1px solid ${ok ? '#4ade80' : '#f87171'}`;
+    let html = `<div style="color:${ok?'#4ade80':'#f87171'};font-size:18px;font-weight:700;margin-bottom:8px">${ok?'✓ Richtig!':'✗ Falsch!'}</div>`;
+    if (!ok && hints.length > 0) {
+      html += `<div style="color:#8080a0;font-size:12px;margin-bottom:8px">Mögliche Checkouts:</div>`;
+      html += hints.map((h,vi) =>
+        `<div style="display:flex;justify-content:center;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:${vi<hints.length-1?'7px':'0'}">
+          <span style="color:#404060;font-size:11px;min-width:44px;text-align:right">Var. ${vi+1}:</span>
+          ${pathHtml(h, true)}
+        </div>`
+      ).join('');
+    }
+    html += `<button class="btn" onclick="trainerNext()" style="background:#e94560;color:#fff;padding:10px 22px;font-size:15px;font-weight:700;margin-top:12px;border-radius:8px">Weiter →</button>`;
+    resEl.innerHTML = html;
+    document.getElementById('trainer-controls').querySelector('#hint-btn').style.display = 'none';
+    document.getElementById('trainer-hint').style.display = 'none';
+  } else {
+    resEl.style.display = 'none';
+    document.getElementById('trainer-controls').querySelector('#hint-btn').style.display = 'inline-block';
+  }
+
+  // confirm btn
+  const confirmBtn = document.getElementById('trainer-confirm');
+  confirmBtn.disabled = !trainerDarts.length || bust;
+  confirmBtn.style.opacity = (!trainerDarts.length || bust) ? 0.5 : 1;
+  confirmBtn.style.background = (!trainerDarts.length || bust) ? '#222238' : '#e94560';
+
+  // controls visibility
+  document.getElementById('trainer-controls').style.display = trainerResult ? 'none' : 'block';
+}
+
+function toggleHint() { trainerHintVisible = !trainerHintVisible; renderTrainer(); }
+
+function trainerConfirm() {
+  if (!trainerDarts.length) return;
+  const sum = trainerDarts.reduce((s,d)=>s+d.value,0);
+  const last = trainerDarts[trainerDarts.length-1];
+  if (sum === trainerScore && isDouble(last.name)) {
+    trainerResult = 'correct'; trainerOk++;
+  } else {
+    trainerResult = 'wrong'; trainerFail++;
+  }
+  renderTrainer();
+}
+
+function trainerUndo() {
+  if (!trainerDarts.length) return;
+  trainerDarts.pop();
+  renderTrainer();
+}
+
+function trainerNext() {
+  trainerScore = genTrainerScore(trainerMode);
+  trainerDarts = []; trainerResult = null; trainerHintVisible = false;
+  renderTrainer();
+  renderPadIn('dart-pad', (d) => {
+    if (trainerResult || trainerDarts.length >= 3) return;
+    trainerDarts.push(d);
+    renderTrainer();
+  });
+}
+
+// ==================== X01 ====================
+let x01Start = 501, x01Rem = 501, x01Rnd = [], x01TotalDarts = 0, x01Rounds = 0, x01History = [], x01Done = false;
+
+function startX01(s) {
+  x01Start = s; x01Rem = s; x01Rnd = []; x01TotalDarts = 0; x01Rounds = 0; x01History = []; x01Done = false;
+  showScreen('x01');
+  renderX01();
+  renderPadIn('x01-pad', (d) => {
+    if (x01Rnd.length >= 3 || x01Done) return;
+    x01Rnd.push(d);
+    renderX01();
+  });
+}
+
+function resetX01() { startX01(x01Start); }
+
+function renderX01() {
+  const rndTotal = x01Rnd.reduce((s,d)=>s+d.value,0);
+  const proj = x01Rem - rndTotal;
+  const last = x01Rnd[x01Rnd.length-1];
+  const bust = proj < 0 || proj === 1 || (proj === 0 && x01Rnd.length > 0 && !isDouble(last?.name));
+  const checkout = proj === 0 && x01Rnd.length > 0 && isDouble(last?.name);
+  const hint = x01Rem <= 170 && !IMPOSSIBLE.has(x01Rem) && !x01Done ? findCheckout(x01Rem) : null;
+  const avg3 = x01TotalDarts > 0 ? ((x01Start - x01Rem) / x01TotalDarts * 3).toFixed(1) : "0.0";
+
+  document.getElementById('x01-rem').textContent = x01Done ? 0 : x01Rem;
+  document.getElementById('x01-avg').textContent = `Ø ${avg3}`;
+  document.getElementById('x01-stats').textContent = `${x01Rounds} Rd. · ${x01TotalDarts} Darts`;
+
+  const panel = document.getElementById('x01-score-panel');
+  panel.style.background = x01Done ? '#0a1e10' : '#1a1a2e';
+  panel.style.borderColor = x01Done ? '#4ade80' : bust ? '#f87171' : '#2a2a40';
+
+  const hintEl = document.getElementById('x01-hint');
+  if (hint && !x01Done) {
+    hintEl.style.display = 'block';
+    document.getElementById('x01-hint-content').innerHTML = pathHtml(hint);
+  } else { hintEl.style.display = 'none'; }
+
+  const roundBox = document.getElementById('x01-round-box');
+  roundBox.style.borderColor = bust ? '#5a1010' : '#252540';
+  const curEl = document.getElementById('x01-current');
+  if (x01Rnd.length) {
+    curEl.innerHTML = x01Rnd.map(d => badge(d.name, true)).join(' ');
+  } else {
+    curEl.innerHTML = '<span style="color:#303050;font-size:13px">Dart eingeben...</span>';
+  }
+  const sumEl = document.getElementById('x01-round-sum');
+  if (x01Rnd.length) {
+    const col = bust ? '#f87171' : checkout ? '#4ade80' : '#fbbf24';
+    const projCol = bust ? '#f87171' : checkout ? '#4ade80' : '#e2e2f0';
+    const projText = bust ? 'BUST! 💥' : checkout ? 'CHECKOUT! 🎯' : proj;
+    sumEl.innerHTML = `<span style="color:#8080a0">Punkte: </span><b style="color:${col}">${rndTotal}</b><span style="color:#8080a0"> → </span><b style="color:${projCol}">${projText}</b>`;
+  } else { sumEl.innerHTML = ''; }
+
+  document.getElementById('x01-done-box').style.display = x01Done ? 'block' : 'none';
+  document.getElementById('x01-action-btns').style.display = x01Done ? 'none' : 'flex';
+  document.getElementById('x01-pad').style.display = x01Done ? 'none' : 'block';
+  if (x01Done) {
+    document.getElementById('x01-done-stats').textContent = `${x01Rounds} Runden · ${x01TotalDarts} Darts · Ø ${avg3} pro Leg`;
+  }
+
+  const confirmBtn = document.getElementById('x01-confirm');
+  if (bust) {
+    confirmBtn.textContent = '💥 Bust — Runde verwerfen';
+    confirmBtn.style.background = '#7a1010';
+  } else {
+    confirmBtn.textContent = '✓ Runde bestätigen';
+    confirmBtn.style.background = x01Rnd.length ? '#e94560' : '#222238';
+  }
+  confirmBtn.disabled = !x01Rnd.length;
+  confirmBtn.style.opacity = !x01Rnd.length ? 0.5 : 1;
+
+  // history
+  const histEl = document.getElementById('x01-history');
+  const histList = document.getElementById('x01-history-list');
+  if (x01History.length > 0) {
+    histEl.style.display = 'block';
+    histList.innerHTML = [...x01History].slice(-8).reverse().map(h =>
+      `<div style="background:${h.bust?'#1e0a0a':'#141420'};border:1px solid ${h.bust?'#3a1010':'#1a1a30'};border-radius:6px;padding:6px 10px;font-size:12px;display:flex;justify-content:space-between;align-items:center">
+        <div style="display:flex;gap:4px;flex-wrap:wrap">${h.darts.map(d=>badge(d.name)).join('')}</div>
+        <div style="color:${h.bust?'#f87171':'#8080a0'};font-weight:700;font-size:13px;white-space:nowrap;margin-left:8px">${h.bust?'Bust':'= '+h.total}</div>
+      </div>`
+    ).join('');
+  } else { histEl.style.display = 'none'; }
+}
+
+function x01Confirm() {
+  if (!x01Rnd.length) return;
+  const rndTotal = x01Rnd.reduce((s,d)=>s+d.value,0);
+  const proj = x01Rem - rndTotal;
+  const last = x01Rnd[x01Rnd.length-1];
+  const bust = proj < 0 || proj === 1 || (proj === 0 && !isDouble(last?.name));
+  const checkout = proj === 0 && isDouble(last?.name);
+  x01History.push({ darts:[...x01Rnd], total:bust?0:rndTotal, bust, rem:x01Rem });
+  x01TotalDarts += x01Rnd.length;
+  x01Rounds++;
+  if (!bust) x01Rem = proj;
+  if (checkout) x01Done = true;
+  x01Rnd = [];
+  renderX01();
+}
+
+function x01Undo() { if (!x01Rnd.length) return; x01Rnd.pop(); renderX01(); }
+
+// ==================== AROUND THE CLOCK ====================
+const clockTargets = [...Array.from({length:20},(_,i)=>i+1), "Bull"];
+let clockIdx = 0, clockDarts = 0, clockTotalMisses = 0, clockPerTarget = [], clockDone = false, clockCurMisses = 0;
+
+function startClock() {
+  clockIdx = 0; clockDarts = 0; clockTotalMisses = 0; clockPerTarget = []; clockDone = false; clockCurMisses = 0;
+  showScreen('clock');
+  renderClock();
+}
+
+function resetClock() { startClock(); }
+
+function renderClock() {
+  const avg = clockPerTarget.length ? (clockPerTarget.reduce((a,b)=>a+b,0)/clockPerTarget.length).toFixed(1) : '-';
+  document.getElementById('clock-progress').style.width = `${(clockIdx/clockTargets.length)*100}%`;
+  document.getElementById('clock-stats').textContent = `${clockIdx} / ${clockTargets.length} · ${clockDarts} Darts gesamt · Ø ${avg} Darts/Zahl`;
+
+  const grid = document.getElementById('clock-grid');
+  grid.innerHTML = clockTargets.map((t,i) => {
+    const done = i < clockIdx, active = i === clockIdx;
+    const bg = done ? '#5a0f1e' : active ? '#e94560' : '#1a1a2e';
+    const col = done ? '#e07080' : active ? '#fff' : '#8080a0';
+    const border = active ? '#e94560' : done ? '#5a1020' : '#252540';
+    return `<div style="width:38px;height:38px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;background:${bg};color:${col};border:1px solid ${border}">${t==='Bull'?'🎯':t}</div>`;
+  }).join('');
+
+  if (!clockDone) {
+    document.getElementById('clock-game').style.display = 'block';
+    document.getElementById('clock-done').style.display = 'none';
+    const target = clockTargets[clockIdx];
+    const tEl = document.getElementById('clock-target');
+    tEl.textContent = target === 'Bull' ? '🎯' : target;
+    tEl.style.fontSize = target === 'Bull' ? '48px' : '64px';
+    document.getElementById('clock-misses').textContent = clockCurMisses > 0 ? `${clockCurMisses} Fehlwurf${clockCurMisses!==1?'e':''}` : '';
+  } else {
+    document.getElementById('clock-game').style.display = 'none';
+    document.getElementById('clock-done').style.display = 'block';
+    const avg2 = clockPerTarget.length ? (clockPerTarget.reduce((a,b)=>a+b,0)/clockPerTarget.length).toFixed(1) : '-';
+    document.getElementById('clock-done-stats').innerHTML = `Gesamt: <b style="color:#fbbf24">${clockDarts} Darts</b><br><span style="color:#8080a0;font-size:14px">Ø ${avg2} Darts pro Zahl · ${clockTotalMisses} Fehlwürfe</span>`;
+  }
+}
+
+function clockHit() {
+  const d = clockCurMisses + 1;
+  clockPerTarget.push(d);
+  clockDarts += d;
+  clockCurMisses = 0;
+  if (clockIdx >= clockTargets.length - 1) clockDone = true;
+  else clockIdx++;
+  renderClock();
+}
+
+function clockMiss() { clockCurMisses++; clockDarts++; clockTotalMisses++; renderClock(); }
+
+// ==================== CHECKOUT TABELLE ====================
+const allCheckouts = VALID_SCORES.map(s => ({ score:s, variants:findCheckouts(s,3) })).filter(c=>c.variants.length);
+
+function renderTable() {
+  const q = document.getElementById('table-search').value.trim().toLowerCase();
+  let filtered = allCheckouts;
+  if (q) {
+    const n = parseInt(q);
+    if (!isNaN(n)) filtered = allCheckouts.filter(c => String(c.score).includes(q));
+    else filtered = allCheckouts.filter(c => c.variants.some(v => v.some(d => d.toLowerCase().includes(q))));
+  }
+  document.getElementById('table-count').innerHTML = `${filtered.length} Checkouts · <span style="color:#e94560">Rot = Triple</span> · <span style="color:#60a5fa">Blau = Doppel</span>`;
+  document.getElementById('table-list').innerHTML = filtered.map((c,i) =>
+    `<div style="background:${i%2===0?'#141420':'#1a1a2e'};padding:8px 12px;border-bottom:1px solid #1a1a28;display:flex;align-items:flex-start;gap:10px">
+      <div style="color:#fbbf24;font-weight:700;font-size:17px;min-width:38px;padding-top:2px">${c.score}</div>
+      <div style="display:flex;flex-direction:column;gap:5px;flex:1">
+        ${c.variants.map((path,vi) =>
+          `<div style="display:flex;align-items:center;gap:5px;flex-wrap:wrap">
+            ${c.variants.length>1?`<span style="color:#404060;font-size:10px;min-width:36px">Var.${vi+1}</span>`:''}
+            ${pathHtml(path)}
+          </div>`
+        ).join('')}
+      </div>
+    </div>`
+  ).join('');
+}
+
+// init table
+renderTable();
+</script>
+</body>
+</html>
